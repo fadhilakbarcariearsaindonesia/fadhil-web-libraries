@@ -1,0 +1,10 @@
+.root {
+  box-sizing: border-box;
+  width: min(100%, calc(var(--fwlb-container-max, 72rem) + (var(--fwlb-container-gutter, 0px) * 2)));
+  min-width: 0;
+  padding-inline: var(--fwlb-container-gutter, 0px);
+}
+
+.root[data-centered='true'] {
+  margin-inline: auto;
+}
