@@ -122,12 +122,18 @@ export const KEY_ALIASES: Record<string, CanonicalSyntaxKey> = {
   font: 'fontSize',
   ff: 'fontFamily',
   fontfamily: 'fontFamily',
+  fontstyle: 'fontStyle',
+  fst: 'fontStyle',
+  fontstretch: 'fontStretch',
+  stretch: 'fontStretch',
   fw: 'weight',
   weight: 'weight',
   lh: 'lineHeight',
   lineheight: 'lineHeight',
   tracking: 'tracking',
   ls: 'tracking',
+  fontfeaturesettings: 'fontFeatureSettings',
+  features: 'fontFeatureSettings',
   textalign: 'textAlign',
   ta: 'textAlign',
   texttransform: 'textTransform',
@@ -248,6 +254,24 @@ export const KEY_ALIASES: Record<string, CanonicalSyntaxKey> = {
   cv: 'contentVisibility',
   containintrinsicsize: 'containIntrinsicSize',
   cis: 'containIntrinsicSize',
+  containertype: 'containerType',
+  containername: 'containerName',
+  container: 'container',
+  objectfit: 'objectFit',
+  objectposition: 'objectPosition',
+  imagerendering: 'imageRendering',
+  imagefit: 'objectFit',
+  imagepos: 'objectPosition',
+  imgfit: 'objectFit',
+  imgpos: 'objectPosition',
+  fontvariation: 'fontVariationSettings',
+  fontvariationsettings: 'fontVariationSettings',
+  fontopticalsizing: 'fontOpticalSizing',
+  opticalsizing: 'fontOpticalSizing',
+  srcset: 'srcSet',
+  sizes: 'sizes',
+  fetchpriority: 'fetchPriority',
+  decoding: 'decoding',
   role: 'role',
   tabindex: 'tabIndex',
   title: 'titleText',
@@ -360,6 +384,12 @@ export const GROUP_KEYS = {
     'z',
     'sticky',
     'pin',
+    'containerType',
+    'containerName',
+    'container',
+    'objectFit',
+    'objectPosition',
+    'imageRendering',
   ],
   spacing: [
     'gap',
@@ -411,9 +441,12 @@ export const GROUP_KEYS = {
   text: [
     'fontSize',
     'fontFamily',
+    'fontStyle',
+    'fontStretch',
     'weight',
     'lineHeight',
     'tracking',
+    'fontFeatureSettings',
     'textAlign',
     'textTransform',
     'whiteSpace',
@@ -422,6 +455,8 @@ export const GROUP_KEYS = {
     'clampLines',
     'accent',
     'caret',
+    'fontVariationSettings',
+    'fontOpticalSizing',
   ],
   fx: [
     'cursor',
@@ -462,6 +497,10 @@ export const GROUP_KEYS = {
     'role',
     'tabIndex',
     'titleText',
+    'srcSet',
+    'sizes',
+    'fetchPriority',
+    'decoding',
     'inert',
     'loading',
     'disabled',
@@ -476,6 +515,62 @@ export const GROUP_KEYS = {
 } as const satisfies Record<'layout' | 'spacing' | 'surface' | 'text' | 'fx' | 'logic', readonly CanonicalSyntaxKey[]>;
 
 export const GROUP_KEY_SETS = Object.freeze({
+  layout: new Set<CanonicalSyntaxKey>(GROUP_KEYS.layout),
+  spacing: new Set<CanonicalSyntaxKey>(GROUP_KEYS.spacing),
+  surface: new Set<CanonicalSyntaxKey>(GROUP_KEYS.surface),
+  text: new Set<CanonicalSyntaxKey>(GROUP_KEYS.text),
+  fx: new Set<CanonicalSyntaxKey>(GROUP_KEYS.fx),
+  logic: new Set<CanonicalSyntaxKey>(GROUP_KEYS.logic),
+});
+
+export const BOOLEAN_TRUE = new Set(['true', '1', 'yes', 'on', 'wrap']);
+export const BOOLEAN_FALSE = new Set(['false', '0', 'no', 'off', 'nowrap']);
+
+export function rememberCache<T>(cache: Map<string, T>, key: string, value: T) {
+  if (cache.has(key)) {
+    cache.delete(key);
+  } else if (cache.size >= MAX_CACHE_SIZE) {
+    const firstKey = cache.keys().next().value;
+    if (firstKey) {
+      cache.delete(firstKey);
+    }
+  }
+
+  cache.set(key, value);
+}
+
+export function normalizeKey(rawKey: string) {
+  return KEY_ALIASES[rawKey.trim().toLowerCase()];
+}
+
+export function normalizeGroupName(rawGroup: string) {
+  return GROUP_ALIASES[rawGroup.trim().toLowerCase()];
+}
+
+export function isKnownGroupKey(
+  group: Exclude<CanonicalSyntaxGroupName, 'aria' | 'data' | 'vars' | 'css' | 'attrs'>,
+  key: CanonicalSyntaxKey,
+) {
+  return GROUP_KEY_SETS[group].has(key);
+}
+
+export function isCompiledSyntax(input: FadhilWebSyntax): input is FadhilWebCompiledSyntax {
+  return typeof input === 'object' && input !== null && '__fwlbType' in input && input.__fwlbType === 'compiled-syntax';
+}
+
+export function freezeResolvedSyntax(
+  style: React.CSSProperties,
+  semantics: ResolvedSyntaxSemantics,
+  logic: ResolvedSyntaxLogic,
+  attrs: Record<string, SyntaxScalar>,
+) {
+  return Object.freeze({
+    style: Object.freeze(style) as React.CSSProperties,
+    semantics: Object.freeze(semantics) as ResolvedSyntaxSemantics,
+    logic: Object.freeze(logic) as ResolvedSyntaxLogic,
+    attrs: Object.freeze(attrs) as Record<string, SyntaxScalar>,
+  }) as ResolvedSyntax;
+    } GROUP_KEY_SETS = Object.freeze({
   layout: new Set<CanonicalSyntaxKey>(GROUP_KEYS.layout),
   spacing: new Set<CanonicalSyntaxKey>(GROUP_KEYS.spacing),
   surface: new Set<CanonicalSyntaxKey>(GROUP_KEYS.surface),
